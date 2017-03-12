@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>My Maps Test</title>
+    <title>Pollution Map Test</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script type="text/javascript" src="markerclusterer.js"></script>
 </head>
@@ -30,89 +31,745 @@ body {
             },
         });
 
-        var all_data;
-        $.ajax({
-            url: "http://localhost:3000",
-            success: function(data) {
-                var color_list = [
-                    '#FF0000', '#FFFF00', '#00FF00', '#00FFFF', '#00DD00', '#009900'
-                ];
-                console.log("AJAX Request successfull")
-                marker_data = [];
-                data.forEach(function(loc) {
-                    var color_choice = color_list[Math.floor(Math.random() * color_list.length)];
-                    var myLatlng = new google.maps.LatLng(loc.lat, loc.lon);
-                    var cityCircle = create_new_circle(myLatlng, color_choice);
-                    var infowindow = new google.maps.InfoWindow({
-                        content: loc.name
-                    });
-                    var marker = new google.maps.Marker({
-                        position: myLatlng,
-                        map: map,
-                        infowindow: infowindow
-                    });
-                    // http://stackoverflow.com/questions/37800681/google-maps-v3-markerclusterer-add-circle-to-visible-markers-only
-                    cityCircle.bindTo('center', marker, 'position');
-                    cityCircle.bindTo('map', marker, 'map');
-                    google.maps.event.addListener(marker, 'click', function() {
-                        this.infowindow.open(map, this)
-                    });
-                    marker_data.push(marker);
-                });
-
-                var markerCluster = new MarkerClusterer(map, marker_data, {
-                    imagePath: 'images/m'
-                });
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.log("AJAX Request Failed")
-                alert("Unable to retrieve pollution data from the server.\nPlease try again later.")
-            },
-        });
-
-        function add_markers(data) {
-            var color_list = [
-                '#FF0000', '#FFFF00', '#00FF00', '#00FFFF', '#00DD00', '#009900'
-            ];
-            console.log("AJAX Request successfull")
-            marker_data = [];
-            data.forEach(function(loc) {
-                // Add the circle for this city to the map.
-                color_index = Math.floor(Math.random() * color_list.length);
-                color_choice = color_list[color_index];
-                var myLatlng = new google.maps.LatLng(loc.lat, loc.lon);
-                var cityCircle = create_new_circle(myLatlng, color_choice);
-                var infowindow = new google.maps.InfoWindow({
-                    content: loc.name
-                });
-                var marker = new google.maps.Marker({
-                    position: myLatlng,
-                    map: map,
-                    infowindow: infowindow
-                });
-                google.maps.event.addListener(marker, 'click', function() {
-                    this.infowindow.open(map, this)
-                });
-                marker_data.push(marker);
-            });
-            var markerCluster = new MarkerClusterer(map, marker_data, {
-                imagePath: 'images/m'
-            });
-        }
-
-        function create_new_circle(latlng, color_choice) {
-            return new google.maps.Circle({
-                strokeColor: color_choice,
-                fillColor: color_choice,
-                strokeOpacity: 0.8,
-                strokeWeight: 2,
-                fillOpacity: 0.35,
-                map: map,
-                center: latlng,
-                radius: 5000,
-            });
-        }
+        add_markers(map, all_data);
     }
+
+    function add_markers(map, data) {
+        var color_list = [
+            '#FF0000', '#FFFF00', '#00FF00', '#00FFFF', '#00DD00', '#009900'
+        ];
+        console.log("AJAX Request successfull")
+        marker_data = [];
+        data.forEach(function(loc) {
+            // Add the circle for this city to the map.
+            color_index = Math.floor(Math.random() * color_list.length);
+            color_choice = color_list[color_index];
+            var myLatlng = new google.maps.LatLng(loc.lat, loc.lon);
+            var cityCircle = create_new_circle(map, myLatlng, color_choice);
+            var infowindow = new google.maps.InfoWindow({
+                content: '<h3>' + loc.name +
+                    '</h3><div>Pollution Level: ' +
+                    loc.value.toString() + '</div>',
+            });
+            var marker = new google.maps.Marker({
+                position: myLatlng,
+                map: map,
+                title: 'My Title',
+                infowindow: infowindow
+            });
+            // http://stackoverflow.com/questions/37800681/google-maps-v3-markerclusterer-add-circle-to-visible-markers-only
+            cityCircle.bindTo('center', marker, 'position');
+            cityCircle.bindTo('map', marker, 'map');
+
+            google.maps.event.addListener(marker, 'click', function() {
+                this.infowindow.open(map, this)
+            });
+            marker_data.push(marker);
+        });
+        var markerCluster = new MarkerClusterer(map, marker_data, {
+            imagePath: 'images/m'
+        });
+    }
+
+    function create_new_circle(map, latlng, color_choice) {
+        return new google.maps.Circle({
+            strokeColor: color_choice,
+            fillColor: color_choice,
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillOpacity: 0.35,
+            map: map,
+            center: latlng,
+            radius: 5000,
+        });
+    }
+
+    all_data = [{
+        "name": "Achalpur",
+        "lat": 21.3,
+        "lon": 77.55,
+        "value": 12
+    }, {
+        "name": "Ahiri",
+        "lat": 19.5,
+        "lon": 80.5,
+        "value": 1
+    }, {
+        "name": "Ahmadnagar",
+        "lat": 19.08333333,
+        "lon": 74.8,
+        "value": 1
+    }, {
+        "name": "Ajanta",
+        "lat": 20.55,
+        "lon": 75.8,
+        "value": 1
+    }, {
+        "name": "Ajanta Range",
+        "lat": 20.33333333,
+        "lon": 77.16666667,
+        "value": 1
+    }, {
+        "name": "Akalkot",
+        "lat": 17.51666667,
+        "lon": 76.85,
+        "value": 1
+    }, {
+        "name": "Akola",
+        "lat": 20.7,
+        "lon": 77.03333333,
+        "value": 1
+    }, {
+        "name": "Akot",
+        "lat": 21.1,
+        "lon": 77.1,
+        "value": 1
+    }, {
+        "name": "Alibag",
+        "lat": 18.65,
+        "lon": 72.91666667,
+        "value": 1
+    }, {
+        "name": "Ambgaon",
+        "lat": 20.63333333,
+        "lon": 80,
+        "value": 1
+    }, {
+        "name": "Amravati",
+        "lat": 20.93333333,
+        "lon": 77.8,
+        "value": 1
+    }, {
+        "name": "Armoi",
+        "lat": 20.46666667,
+        "lon": 80.03333333,
+        "value": 1
+    }, {
+        "name": "Ashti",
+        "lat": 18.83333333,
+        "lon": 75.25,
+        "value": 1
+    }, {
+        "name": "Ashti",
+        "lat": 21.2,
+        "lon": 78.23333333,
+        "value": 1
+    }, {
+        "name": "Assaye",
+        "lat": 20.25,
+        "lon": 75.96666667,
+        "value": 1
+    }, {
+        "name": "Aundh",
+        "lat": 17.55,
+        "lon": 74.38333333,
+        "value": 1
+    }, {
+        "name": "Aurangabad",
+        "lat": 19.88333333,
+        "lon": 75.38333333,
+        "value": 1
+    }, {
+        "name": "Badnera",
+        "lat": 20.86666667,
+        "lon": 77.76666667,
+        "value": 1
+    }, {
+        "name": "Balapur",
+        "lat": 20.7,
+        "lon": 76.86666667,
+        "value": 1
+    }, {
+        "name": "Balharshah",
+        "lat": 19.91666667,
+        "lon": 79.38333333,
+        "value": 12
+    }, {
+        "name": "Bandra",
+        "lat": 19.05,
+        "lon": 75.86666667,
+        "value": 12
+    }, {
+        "name": "Bankot",
+        "lat": 17.96666667,
+        "lon": 73.08333333,
+        "value": 1
+    }, {
+        "name": "Barsi",
+        "lat": 18.21666667,
+        "lon": 75.73333333,
+        "value": 1
+    }, {
+        "name": "Basim",
+        "lat": 20.08333333,
+        "lon": 77.16666667,
+        "value": 1
+    }, {
+        "name": "Basmat",
+        "lat": 19.36666667,
+        "lon": 77.2,
+        "value": 1
+    }, {
+        "name": "Bassein",
+        "lat": 19.36666667,
+        "lon": 72.93333333,
+        "value": 1
+    }, {
+        "name": "Bhandara",
+        "lat": 21.15,
+        "lon": 79.7,
+        "value": 1
+    }, {
+        "name": "Bhor",
+        "lat": 18.15,
+        "lon": 73.9,
+        "value": 1
+    }, {
+        "name": "Bhusawal",
+        "lat": 21.03333333,
+        "lon": 75.78333333,
+        "value": 1
+    }, {
+        "name": "Bir",
+        "lat": 19,
+        "lon": 75.83333333,
+        "value": 1
+    }, {
+        "name": "Bombay, (Mumbai)",
+        "lat": 18.91666667,
+        "lon": 72.9,
+        "value": 1
+    }, {
+        "name": "Bori",
+        "lat": 20.91666667,
+        "lon": 79.08333333,
+        "value": 1
+    }, {
+        "name": "Bramhapuri",
+        "lat": 20.66666667,
+        "lon": 79.93333333,
+        "value": 1
+    }, {
+        "name": "Buldana",
+        "lat": 20.53333333,
+        "lon": 76.23333333,
+        "value": 1
+    }, {
+        "name": "Chalisgaon",
+        "lat": 20.55,
+        "lon": 75.16666667,
+        "value": 1
+    }, {
+        "name": "Chandor",
+        "lat": 20.33333333,
+        "lon": 74.31666667,
+        "value": 1
+    }, {
+        "name": "Chandrapur",
+        "lat": 19.95,
+        "lon": 79.35,
+        "value": 1
+    }, {
+        "name": "Chikalda",
+        "lat": 21.4,
+        "lon": 77.36666667,
+        "value": 1
+    }, {
+        "name": "Chopda",
+        "lat": 21.25,
+        "lon": 75.33333333,
+        "value": 1
+    }, {
+        "name": "Daulatabad",
+        "lat": 19.95,
+        "lon": 75.25,
+        "value": 12
+    }, {
+        "name": "Deglur",
+        "lat": 18.56666667,
+        "lon": 77.55,
+        "value": 1
+    }, {
+        "name": "Deoli",
+        "lat": 20.65,
+        "lon": 78.53333333,
+        "value": 1
+    }, {
+        "name": "Dhond",
+        "lat": 18.53333333,
+        "lon": 74.66666667,
+        "value": 1
+    }, {
+        "name": "Dhule",
+        "lat": 20.96666667,
+        "lon": 74.78333333,
+        "value": 1
+    }, {
+        "name": "Ellora",
+        "lat": 20.03333333,
+        "lon": 75.21666667,
+        "value": 1
+    }, {
+        "name": "Gangakher",
+        "lat": 18.86666667,
+        "lon": 76.71666667,
+        "value": 1
+    }, {
+        "name": "Gawilgarh",
+        "lat": 21.36666667,
+        "lon": 77.41666667,
+        "value": 1
+    }, {
+        "name": "Gondia",
+        "lat": 21.46666667,
+        "lon": 80.48333333,
+        "value": 1
+    }, {
+        "name": "Hinganghat",
+        "lat": 20.56666667,
+        "lon": 78.88333333,
+        "value": 1
+    }, {
+        "name": "Hingoli",
+        "lat": 19.71666667,
+        "lon": 77.18333333,
+        "value": 1
+    }, {
+        "name": "Igatpur",
+        "lat": 19.66666667,
+        "lon": 73.58333333,
+        "value": 1
+    }, {
+        "name": "Jalgaon",
+        "lat": 21.08333333,
+        "lon": 75.66666667,
+        "value": 1
+    }, {
+        "name": "Jalna",
+        "lat": 19.85,
+        "lon": 75.93333333,
+        "value": 1
+    }, {
+        "name": "Jamkhed",
+        "lat": 18.71666667,
+        "lon": 75.4,
+        "value": 1
+    }, {
+        "name": "Janjira",
+        "lat": 18.3,
+        "lon": 73,
+        "value": 1
+    }, {
+        "name": "Jath",
+        "lat": 17.05,
+        "lon": 75.25,
+        "value": 1
+    }, {
+        "name": "Jawhar",
+        "lat": 19.86666667,
+        "lon": 73.35,
+        "value": 1
+    }, {
+        "name": "Junnar",
+        "lat": 19.2,
+        "lon": 73.96666667,
+        "value": 1
+    }, {
+        "name": "Kadirabad",
+        "lat": 19.85,
+        "lon": 75.93333333,
+        "value": 12
+    }, {
+        "name": "Kalyan",
+        "lat": 19.23333333,
+        "lon": 73.16666667,
+        "value": 12
+    }, {
+        "name": "Kamptee",
+        "lat": 21.23333333,
+        "lon": 79.25,
+        "value": 1
+    }, {
+        "name": "Karad",
+        "lat": 17.25,
+        "lon": 74.2,
+        "value": 1
+    }, {
+        "name": "Karanja",
+        "lat": 20.48333333,
+        "lon": 77.53333333,
+        "value": 1
+    }, {
+        "name": "Karmala",
+        "lat": 18.4,
+        "lon": 75.25,
+        "value": 1
+    }, {
+        "name": "Khamgaon",
+        "lat": 20.7,
+        "lon": 76.61666667,
+        "value": 1
+    }, {
+        "name": "Khapa",
+        "lat": 21.41666667,
+        "lon": 79.03333333,
+        "value": 1
+    }, {
+        "name": "Khed",
+        "lat": 18.85,
+        "lon": 73.93333333,
+        "value": 1
+    }, {
+        "name": "Khuldabad Rauza",
+        "lat": 20.01666667,
+        "lon": 75.25,
+        "value": 1
+    }, {
+        "name": "Kirkee",
+        "lat": 18.55,
+        "lon": 73.9,
+        "value": 1
+    }, {
+        "name": "Kolhapur",
+        "lat": 16.7,
+        "lon": 74.26666667,
+        "value": 1
+    }, {
+        "name": "Kondalwadi",
+        "lat": 18.25,
+        "lon": 77.71666667,
+        "value": 1
+    }, {
+        "name": "Kopargaon",
+        "lat": 19.9,
+        "lon": 74.55,
+        "value": 1
+    }, {
+        "name": "Koyna, R.",
+        "lat": 17.5,
+        "lon": 73.75,
+        "value": 1
+    }, {
+        "name": "Kurundvad",
+        "lat": 16.66666667,
+        "lon": 74.66666667,
+        "value": 1
+    }, {
+        "name": "Latur",
+        "lat": 18.4,
+        "lon": 76.6,
+        "value": 1
+    }, {
+        "name": "Lonavla",
+        "lat": 18.73333333,
+        "lon": 73.46666667,
+        "value": 1
+    }, {
+        "name": "Mahabaleshwar",
+        "lat": 17.96666667,
+        "lon": 73.71666667,
+        "value": 1
+    }, {
+        "name": "Malegaon",
+        "lat": 20.5,
+        "lon": 74.66666667,
+        "value": 1
+    }, {
+        "name": "Malkapur",
+        "lat": 20.88333333,
+        "lon": 76.28333333,
+        "value": 12
+    }, {
+        "name": "Malvan",
+        "lat": 16.05,
+        "lon": 73.5,
+        "value": 1
+    }, {
+        "name": "Mangaon",
+        "lat": 18.25,
+        "lon": 73.33333333,
+        "value": 1
+    }, {
+        "name": "Manmad",
+        "lat": 20.25,
+        "lon": 74.48333333,
+        "value": 1
+    }, {
+        "name": "Mansar",
+        "lat": 21.4,
+        "lon": 79.31666667,
+        "value": 1
+    }, {
+        "name": "Matheran",
+        "lat": 18.98333333,
+        "lon": 73.3,
+        "value": 1
+    }, {
+        "name": "Mazalgaon",
+        "lat": 19.13333333,
+        "lon": 76.21666667,
+        "value": 1
+    }, {
+        "name": "Miraj",
+        "lat": 16.81666667,
+        "lon": 74.71666667,
+        "value": 1
+    }, {
+        "name": "Mominabad (Amba)",
+        "lat": 18.73333333,
+        "lon": 76.38333333,
+        "value": 1
+    }, {
+        "name": "Mukher",
+        "lat": 18.7,
+        "lon": 77.4,
+        "value": 1
+    }, {
+        "name": "Mul",
+        "lat": 20.06666667,
+        "lon": 79.71666667,
+        "value": 1
+    }, {
+        "name": "Mulshi, L.",
+        "lat": 18.83333333,
+        "lon": 73.83333333,
+        "value": 1
+    }, {
+        "name": "Murud",
+        "lat": 18.3,
+        "lon": 72.98333333,
+        "value": 1
+    }, {
+        "name": "Nagpur",
+        "lat": 21.15,
+        "lon": 79.15,
+        "value": 1
+    }, {
+        "name": "Naldurg",
+        "lat": 17.81666667,
+        "lon": 76.33333333,
+        "value": 1
+    }, {
+        "name": "Nanded",
+        "lat": 19.15,
+        "lon": 77.45,
+        "value": 1
+    }, {
+        "name": "Nandurbar",
+        "lat": 21.38333333,
+        "lon": 74.31666667,
+        "value": 1
+    }, {
+        "name": "Nasik",
+        "lat": 20.03333333,
+        "lon": 73.83333333,
+        "value": 1
+    }, {
+        "name": "Osmanabad",
+        "lat": 18.13333333,
+        "lon": 76.1,
+        "value": 1
+    }, {
+        "name": "Pachora",
+        "lat": 20.63333333,
+        "lon": 75.48333333,
+        "value": 12
+    }, {
+        "name": "Paithan",
+        "lat": 19.48333333,
+        "lon": 75.43333333,
+        "value": 12
+    }, {
+        "name": "Pandharpur",
+        "lat": 17.68333333,
+        "lon": 75.38333333,
+        "value": 1
+    }, {
+        "name": "Parbhani",
+        "lat": 19.13333333,
+        "lon": 76.08333333,
+        "value": 1
+    }, {
+        "name": "Parenda",
+        "lat": 18.26666667,
+        "lon": 75.05,
+        "value": 1
+    }, {
+        "name": "Parli",
+        "lat": 18.88333333,
+        "lon": 76.6,
+        "value": 1
+    }, {
+        "name": "Pauni",
+        "lat": 20.8,
+        "lon": 79.06666667,
+        "value": 1
+    }, {
+        "name": "Phaltan",
+        "lat": 18,
+        "lon": 74.48333333,
+        "value": 1
+    }, {
+        "name": "Pune",
+        "lat": 18.51666667,
+        "lon": 73.91666667,
+        "value": 1
+    }, {
+        "name": "Rahuri",
+        "lat": 19.38333333,
+        "lon": 74.7,
+        "value": 1
+    }, {
+        "name": "Rajapur",
+        "lat": 16.65,
+        "lon": 73.55,
+        "value": 1
+    }, {
+        "name": "Rajur",
+        "lat": 20.13333333,
+        "lon": 78.08333333,
+        "value": 1
+    }, {
+        "name": "Rajura",
+        "lat": 20.13333333,
+        "lon": 78.08333333,
+        "value": 1
+    }, {
+        "name": "Ramtek",
+        "lat": 21.4,
+        "lon": 79.03333333,
+        "value": 1
+    }, {
+        "name": "Ratnagiri",
+        "lat": 17.13333333,
+        "lon": 73.31666667,
+        "value": 1
+    }, {
+        "name": "Rauza (Khuldabad)",
+        "lat": 20.01666667,
+        "lon": 75.25,
+        "value": 1
+    }, {
+        "name": "Sahyadriparvat Range",
+        "lat": 20.05,
+        "lon": 76,
+        "value": 1
+    }, {
+        "name": "Sakoli",
+        "lat": 21.08333333,
+        "lon": 80.01666667,
+        "value": 1
+    }, {
+        "name": "Sangamner",
+        "lat": 19.58333333,
+        "lon": 74.26666667,
+        "value": 1
+    }, {
+        "name": "Sangli",
+        "lat": 16.86666667,
+        "lon": 74.6,
+        "value": 1
+    }, {
+        "name": "Satara",
+        "lat": 17.7,
+        "lon": 74.03333333,
+        "value": 12
+    }, {
+        "name": "Savantvadi",
+        "lat": 15.9,
+        "lon": 73.86666667,
+        "value": 1
+    }, {
+        "name": "shegaon",
+        "lat": 20.8,
+        "lon": 76.76666667,
+        "value": 1
+    }, {
+        "name": "Shrigonda",
+        "lat": 18.68333333,
+        "lon": 74.73333333,
+        "value": 1
+    }, {
+        "name": "Taloda",
+        "lat": 21.56666667,
+        "lon": 74.31666667,
+        "value": 1
+    }, {
+        "name": "Tarapur",
+        "lat": 19.86666667,
+        "lon": 72.7,
+        "value": 1
+    }, {
+        "name": "Thane",
+        "lat": 19.2,
+        "lon": 73.03333333,
+        "value": 1
+    }, {
+        "name": "Tuljapur",
+        "lat": 18.03333333,
+        "lon": 76.16666667,
+        "value": 1
+    }, {
+        "name": "Tumsar",
+        "lat": 20.25,
+        "lon": 80.31666667,
+        "value": 1
+    }, {
+        "name": "Udgir",
+        "lat": 18.41666667,
+        "lon": 77.16666667,
+        "value": 1
+    }, {
+        "name": "Ulhasnagar",
+        "lat": 19.33333333,
+        "lon": 73.16666667,
+        "value": 1
+    }, {
+        "name": "Umrer",
+        "lat": 20.3,
+        "lon": 79.35,
+        "value": 1
+    }, {
+        "name": "Vaijapur",
+        "lat": 19.98333333,
+        "lon": 74.8,
+        "value": 1
+    }, {
+        "name": "Vengurla",
+        "lat": 15.86666667,
+        "lon": 73.66666667,
+        "value": 1
+    }, {
+        "name": "Vijayadurg",
+        "lat": 16.43333333,
+        "lon": 73.43333333,
+        "value": 1
+    }, {
+        "name": "Wai",
+        "lat": 17.95,
+        "lon": 73.93333333,
+        "value": 1
+    }, {
+        "name": "Wardha & dist.",
+        "lat": 20.45,
+        "lon": 78.65,
+        "value": 1
+    }, {
+        "name": "Warora",
+        "lat": 20.23333333,
+        "lon": 79.03333333,
+        "value": 1
+    }, {
+        "name": "Yeola",
+        "lat": 20.06666667,
+        "lon": 74.51666667,
+        "value": 1
+    }, {
+        "name": "Yeotmal",
+        "lat": 20.38333333,
+        "lon": 78.18333333,
+        "value": 12
+    }];
     </script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyChCrc04cczIEwVByskXo2YhuyMf35RyKQ&callback=initMap">
     </script>
