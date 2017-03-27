@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Pollution Map Test</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<style type="text/css">
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+#map {
+  height: 100%;
+}
+
+#legend {
+  font-family: Arial, sans-serif;
+  background: #fff;
+  padding: 10px;
+  margin: 10px;
+  border: 3px solid #000;
+}
+
+#legend h3 {
+  margin-top: 0;
+}
+
+.color {
+  height: 12px;
+  width: 12px;
+  margin-right: 3px;
+  float: left;
+}
+
+.red {
+  background: red;
+  border: 1px solid red;
+}
+
+.yellow {
+  background: yellow;
+  border: 1px solid yellow;
+}
+
+.green {
+  background: green;
+  border: 1px solid green;
+}
+
+.purple {
+  background: purple;
+  border: 1px solid purple;
+}
+</style>
+
+<body>
+  <div id="map"></div>
+  <script type="text/javascript">
+  var map, marker, cityCircle, infowindow;
+  /*
+   * This constructor takes the control DIV as an argument.
+   * @constructor
+   */
+  function CenterControl(controlDiv, map) {
+    // Set CSS for the control border.
+    var controlUI = document.createElement('div');
+    controlUI.style.backgroundColor = '#fff';
+    controlUI.style.border = '2px solid #fff';
+    controlUI.style.borderRadius = '3px';
+    controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+    controlUI.style.cursor = 'pointer';
+    controlUI.style.marginBottom = '22px';
+    controlUI.style.textAlign = 'center';
+    controlUI.title = 'Click to send the sms';
+    controlDiv.appendChild(controlUI);
+
+    // Set CSS for the control interior.
+    var controlText = document.createElement('div');
+    controlText.style.color = 'rgb(25,25,25)';
+    controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+    controlText.style.fontSize = '16px';
+    controlText.style.lineHeight = '38px';
+    controlText.style.paddingLeft = '5px';
+    controlText.style.paddingRight = '5px';
+    controlText.innerHTML = 'Send SMS';
+    controlUI.appendChild(controlText);
+
+    // Setup the click event listeners: Send the sms
+    controlUI.addEventListener('click', function() {
+      $.post('/send_sms/', function(data) {
+        console.log(data);
+      });
+    });
+  }
+
+  /*
+   *   Initialize all map related variables
+   */
+  function initMap() {
+    // Create the map.
+    map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 8,
+      center: {
+        lat: 20.9174534,
+        lng: 74.769278
+      },
+    });
+    marker = new google.maps.Marker({
+      map: map,
+      title: 'Pollution Status',
+    });
+    cityCircle = new google.maps.Circle({
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillOpacity: 0.35,
+      map: map,
+      radius: 5000,
+    });
+
+    infowindow = new google.maps.InfoWindow();
+
+    // Create the DIV to hold the control and call the CenterControl()
+    // constructor passing in this DIV.
+    var centerControlDiv = document.createElement('div');
+    var centerControl = new CenterControl(centerControlDiv, map);
+
+    centerControlDiv.index = 1;
+    map.controls[google.maps.ControlPosition.TOP_CENTER].push(centerControlDiv);
+
+    // Create the legend and display on the map
+    var legend = document.createElement('div');
+    legend.id = 'legend';
+    var content = [];
+    content.push('<h3>Pollution Levels</h3>');
+    content.push('<p><div class="color yellow"></div>Low</p>');
+    content.push('<p><div class="color green"></div>Moderate</p>');
+    content.push('<p><div class="color red"></div>High</p>');
+    content.push('<p><div class="color purple"></div>Extremely High</p>');
+    legend.innerHTML = content.join('');
+    legend.index = 1;
+    map.controls[google.maps.ControlPosition.RIGHT_CENTER].push(legend);
+  }
+
+  /*
+   *   Returns the color for the given value
+   */
+  function MapColorforValue(value) {
+    var color_list = [
+      'yellow', 'green', 'red', 'purple'
+    ];
+    console.log(value);
+    if (value < 70)
+      index = 0
+    else if (value < 250)
+      index = 1
+    else if (value < 400)
+      index = 2
+    else if (value > 400)
+      index = 3
+    else
+      index = 0
+    return color_list[index];
+  }
+
+  /*
+   *   Worker function that runs every 5 sec to update the map
+   */
+  (function worker() {
+    $.post('/update/', function(data) {
+      var myLatlng = new google.maps.LatLng(data.lat, data.lon);
+      cityCircle.setOptions({
+        center: myLatlng,
+        fillColor: MapColorforValue(data.val1),
+        strokeColor: MapColorforValue(data.val1),
+      });
+
+      infowindow.setOptions({
+        content: '<h3>ABC</h3><div>' + 'Smoke Level: ' +
+          data.val1.toString() + "<br> " + 'Pollution Level: ' + data.val2.toString() + '</div>',
+      });
+      marker.setOptions({
+        position: myLatlng,
+        infowindow: infowindow
+      });
+      infowindow.open();
+      setTimeout(worker, 5000);
+    });
+  })();
+  </script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyChCrc04cczIEwVByskXo2YhuyMf35RyKQ&callback=initMap">
+  </script>
+</body>
+
+</html>
